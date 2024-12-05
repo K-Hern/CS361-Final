@@ -42,7 +42,6 @@ class Track
 
     return coordinatesList
   end
-
 end
 
 
@@ -72,13 +71,12 @@ class TrackSegment
 
     return coordinateList
   end
-
 end
 
 class Waypoint
   attr_reader :latitude, :longitude, :elevation, :name, :iconType
 
-  def initialize(longitude, latitude, elevation=nil, name=nil, iconType=nil)
+  def initialize(longitude, latitude, elevation: nil, name: nil, iconType: nil)
     @latitude = latitude
     @longitude = longitude
     @elevation = elevation
@@ -90,7 +88,7 @@ class Waypoint
 
   def get_coordinates()
     coordinateList = [self.longitude, self.latitude]
-    if self.elevation
+    if (self.elevation)
       coordinateList.append(self.elevation)
     end
 
@@ -123,7 +121,6 @@ class FeatureSet
   def get_name()
     return self.featureSetName
   end
-
 end
 
 class GEOJSON
@@ -153,10 +150,16 @@ class GEOJSON
   def fill_properties(hash, feature)
     properties = hash["properties"]
 
-    properties["title"] = feature.get_name()
+    if (feature.get_name())
+      properties["title"] = feature.get_name()
+    end
 
     begin
-      properties["icon"] = feature.get_icon_type()
+      icon = feature.get_icon_type()
+
+      if (icon)
+        properties["icon"] = icon
+      end
     rescue NoMethodError
       # Feature has no icon
     end
@@ -189,8 +192,8 @@ class GEOJSON
 end
 
 def main()
-  homeWaypoint = Waypoint.new(longitude = -121.5, latitude = 45.5, elevation = 30, name = "home", iconType = "flag")
-  storeWaypoint = Waypoint.new(longitude = -121.5, latitude = 45.6, elevation = nil, name = "store", iconType = "dot")
+  homeWaypoint = Waypoint.new(-121.5, 45.5, elevation: 30, name: "home", iconType: "flag")
+  storeWaypoint = Waypoint.new(-121.5, 45.6, name: "store")
 
   trackSegment1 = TrackSegment.new([
     Waypoint.new(-122, 45),
@@ -211,10 +214,10 @@ def main()
   track1 = Track.new([trackSegment1, trackSegment2], "track 1")
   track2 = Track.new([trackSegment3], "track 2")
 
-  myData_Set = FeatureSet.new("My Data", [homeWaypoint, storeWaypoint, track1, track2])
+  myDataSet = FeatureSet.new("My Data", [homeWaypoint, storeWaypoint, track1, track2])
   geoJSON = GEOJSON.new()
 
-  puts geoJSON.assemble_geojson(myData_Set.get_feature_set())
+  puts geoJSON.assemble_geojson(myDataSet.get_feature_set())
 end
 
 if File.identical?(__FILE__, $0)
