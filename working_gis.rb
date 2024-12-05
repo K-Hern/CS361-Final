@@ -83,7 +83,7 @@ class Waypoint
     @longitude = longitude
     @elevation = elevation
     @name = name
-    @icon_type = iconType
+    @iconType = iconType
   end
 
   public
@@ -102,7 +102,7 @@ class Waypoint
   end
 
   def get_icon_type()
-    return self.icon_type
+    return self.iconType
   end
 end
 
@@ -164,11 +164,10 @@ class GEOJSON
 
   def fill_geometry(hash, feature)
     geometry = hash["geometry"]
-    coordinatesList = feature.get_coordinates()
-    type = ((coordinatesList.size) == 1) ? "Point" : "MultiLineString"
 
-    geometry["coordinates"].append(coordinatesList)
-    geometry["type"] = type
+    geometry["coordinates"] += feature.get_coordinates()
+    geometry["type"] = ((geometry["coordinates"][0]).is_a?(Array)) ? "MultiLineString" : "Point"
+
   end
 
   def fill_feature_hash(hash, feature)
@@ -189,10 +188,9 @@ class GEOJSON
   end
 end
 
-
 def main()
-  homeWaypoint = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
-  storeWaypoint = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
+  homeWaypoint = Waypoint.new(longitude = -121.5, latitude = 45.5, elevation = 30, name = "home", iconType = "flag")
+  storeWaypoint = Waypoint.new(longitude = -121.5, latitude = 45.6, elevation = nil, name = "store", iconType = "dot")
 
   trackSegment1 = TrackSegment.new([
     Waypoint.new(-122, 45),
