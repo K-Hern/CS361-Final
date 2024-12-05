@@ -3,11 +3,11 @@
 require 'json'
 
 class Track
-  attr_accessor :name, :trackSegmentObjs
+  attr_accessor :name, :trackSegmentObjsList
 
-  def initialize(trackSegmentObjs, name=nil)
+  def initialize(trackSegmentObjsList, name=nil)
     @name = name
-    @trackSegmentObjs = trackSegmentObjs
+    @trackSegmentObjsList = trackSegmentObjsList
   end
 
   public
@@ -28,19 +28,34 @@ class Track
     return self.name
   end
 
+  def get_track_segments()
+    return self.trackSegmentObjsList
+  end
+
+  def get_coordinates()
+    coordinatesList = []
+    segmentsObjList = self.get_track_segments
+
+    segmentsObjList.each do |trackSegmentObj|
+      coordinatesList.append(trackSegmentObj.get_coordinates())
+    end
+
+    return coordinatesList
+  end
+
 end
 
-class TrackSegment
-  attr_reader :wayPointList, :type
 
-  def initialize(wayPointObjs)
-    @wayPointList = wayPointObjs
-    @type = "MultiLineString"
+class TrackSegment
+  attr_reader :wayPointList
+
+  def initialize(wayPointObjsList)
+    @wayPointList = wayPointObjsList
   end
 
   public
 
-  def add_waypointway(PointObj)
+  def add_waypoint(pointObj)
     self.wayPointList.append(wayPointObj)
   end
 
@@ -61,7 +76,7 @@ class TrackSegment
 end
 
 class Waypoint
-attr_reader :latitude, :longitude, :elevation, :name, :iconType
+  attr_reader :latitude, :longitude, :elevation, :name, :iconType
 
   def initialize(longitude, latitude, elevation=nil, name=nil, iconType=nil)
     @latitude = latitude
@@ -74,18 +89,16 @@ attr_reader :latitude, :longitude, :elevation, :name, :iconType
   public
 
   def get_coordinates()
-    coordinate_list = [self.longitude, self.latitude]
+    coordinateList = [self.longitude, self.latitude]
     if self.elevation
-      coordinate_list.append(self.elevation)
+      coordinateList.append(self.elevation)
     end
 
     return coordinateList
   end
 
   def get_name()
-    if self.name
-      return self.name
-    return nil
+    return self.name ? self.name : nil
   end
 
   def get_icon_type()
@@ -101,13 +114,23 @@ class FeatureSet
     @featureSet = featureSet
   end
 
+  public
+
+  def get_feature_set()
+    return self.featureSet
+  end
+
+  def get_name()
+    return self.featureSetName
+  end
+
 end
 
 class GEOJSON
 
   def create_top_hash()
     hash = {
-      "type" => "FeatureCollection"
+      "type" => "FeatureCollection",
       "features" => []
     }
 
@@ -116,7 +139,7 @@ class GEOJSON
 
   def create_feature_hash()
     hash = {
-      "type" => "Feature"
+      "type" => "Feature",
       "properties" => {},
       "geometry" => {
         "type" => nil,
@@ -153,10 +176,10 @@ class GEOJSON
     self.fill_geometry(hash, feature)
   end
 
-  def assemble_geojson(featureSetObj)
+  def assemble_geojson(featureSet)
     hash = self.create_top_hash()
 
-    featureSetObj.each do |feature|
+    featureSet.each do |feature|
       featureHash = self.create_feature_hash()
       self.fill_feature_hash(featureHash, feature)
       hash["features"].append(featureHash)
@@ -171,21 +194,21 @@ def main()
   homeWaypoint = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
   storeWaypoint = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
 
-  trackSegment1 = [
+  trackSegment1 = TrackSegment.new([
     Waypoint.new(-122, 45),
     Waypoint.new(-122, 46),
     Waypoint.new(-121, 46)
-  ]
+  ])
 
-  trackSegment2 = [
+  trackSegment2 = TrackSegment.new([
     Waypoint.new(-121, 45),
     Waypoint.new(-121, 46)
-  ]
+  ])
 
-  trackSegment3 = [
+  trackSegment3 = TrackSegment.new([
     Waypoint.new(-121, 45.5),
     Waypoint.new(-122, 45.5)
-  ]
+  ])
 
   track1 = Track.new([trackSegment1, trackSegment2], "track 1")
   track2 = Track.new([trackSegment3], "track 2")
@@ -193,7 +216,7 @@ def main()
   myData_Set = FeatureSet.new("My Data", [homeWaypoint, storeWaypoint, track1, track2])
   geoJSON = GEOJSON.new()
 
-  puts geoJSON.assemble_geojson(myData_Set)
+  puts geoJSON.assemble_geojson(myData_Set.get_feature_set())
 end
 
 if File.identical?(__FILE__, $0)
