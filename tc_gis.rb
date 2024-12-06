@@ -3,9 +3,6 @@ require 'test/unit'
 
 class TestGis < Test::Unit::TestCase
 
-  # Test for absence of icon in json when no icon given
-  # Test for absence of name in json when no name given
-
   class TestTrack < TestGis
     def test_creation_of_track
       trackSegment1 = TrackSegment.new([
@@ -182,42 +179,118 @@ class TestGis < Test::Unit::TestCase
 
   class TestTrackSegment < TestGis
     def test_creation_of_segment
-      segment = TrackSegment.new()
+      waypointList = [
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ]
+
+      assert_nothing_raised do
+        segment = TrackSegment.new(waypointList)
+      end
     end
 
-    def
+    def test_add_waypoint
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      newWaypoint = Waypoint.new(-119, 39)
+
+      trackSegment1.add_waypoint(newWaypoint)
+
+      assert_equal(4, trackSegment1.wayPointList.length())
     end
 
-    def
+    def test_remove_waypoint
+      myWaypoint = Waypoint.new(-121, 46)
+
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        myWaypoint
+      ])
+
+      trackSegment1.remove_waypoint(myWaypoint)
+
+      assert_equal(2, trackSegment1.wayPointList.length())
+    end
+
+    def test_get_coordinates
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      expected = [[-122, 45],
+                  [-122, 46],
+                  [-121, 46]]
+
+      assert_equal(expected, trackSegment1.get_coordinates.length())
     end
   end
 
   class TestWaypoint < TestGis
     def test_creation_of_wapoint
-      homePoint = Waypoint.new()
+      assert_nothing_raised do
+        homePoint = Waypoint.new(-122, 46)
+      end
     end
 
-    def
+    def test_get_coordinates
+      homePoint = Waypoint.new(-122, 46, elevation: 2000)
+
+      assert_equal([122, 46], homePoint.get_coordinates)
     end
 
-    def
+    def test_get_name
+      homePoint = Waypoint.new(-122, 46, 2000, elevation: 300, name: "Home")
+
+      assert_equal("Home", homePoint.get_name)
+    end
+
+    def test_get_icon_type
+      homePoint = Waypoint.new(-122, 46, iconType: "dot")
+
+      assert_equal("dot", homePoint.get_icon_type)
     end
   end
 
   class TestFeatureSet < TestGis
     def test_creation_of_featureset
-      aspenWaypoint = Waypoint.new()
-      nyWaypoint = Waypoint.new()
-      coWaypoint = Waypoint.new()
-      parisWaypoint = Waypoint.new()
+      aspenWaypoint = Waypoint.new(122, 56)
+      nyWaypoint = Waypoint.new(121, 68)
+      coWaypoint = Waypoint.new(124, 30)
+      parisWaypoint = Waypoint.new(122, 90)
+
+      assert_nothing_raised do
+        homeSet = FeatureSet.new("My Homes", [aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint])
+      end
+    end
+
+    def test_get_feature_set
+      aspenWaypoint = Waypoint.new(122, 56)
+      nyWaypoint = Waypoint.new(121, 68)
+      coWaypoint = Waypoint.new(124, 30)
+      parisWaypoint = Waypoint.new(122, 90)
 
       homeSet = FeatureSet.new("My Homes", [aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint])
+
+      assert_equal([aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint], homeSet.get_feature_set)
     end
 
-    def
-    end
+    def test_get_name
+      aspenWaypoint = Waypoint.new(122, 56)
+      nyWaypoint = Waypoint.new(121, 68)
+      coWaypoint = Waypoint.new(124, 30)
+      parisWaypoint = Waypoint.new(122, 90)
 
-    def
+      homeSet = FeatureSet.new("My Homes", [aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint])
+
+      assert_equal("My Homes", homeSet.get_name)
     end
   end
 end
