@@ -269,7 +269,7 @@ class TestGis < Test::Unit::TestCase
       end
     end
 
-    def test_get_feature_set
+    def test_get_features
       aspenWaypoint = Waypoint.new(122, 56)
       nyWaypoint = Waypoint.new(121, 68)
       coWaypoint = Waypoint.new(124, 30)
@@ -277,7 +277,7 @@ class TestGis < Test::Unit::TestCase
 
       homeSet = FeatureSet.new("My Homes", [aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint])
 
-      assert_equal([aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint], homeSet.get_feature_set)
+      assert_equal([aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint], homeSet.get_features)
     end
 
     def test_get_name
