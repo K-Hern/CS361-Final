@@ -1,163 +1,121 @@
 #!/usr/bin/env ruby
 
 class Track
-  def initialize(segments, name=nil)
+  attr_accessor :name, :trackSegmentObjsList
+
+  def initialize(trackSegmentObjsList, name=nil)
     @name = name
-    segment_objects = []
-    segments.each do |s|
-      segment_objects.append(TrackSegment.new(s))
-    end
-    # set segments to segment_objects
-    @segments = segment_objects
+    @trackSegmentObjsList = trackSegmentObjsList
   end
 
-  def get_track_json()
-    j = '{'
-    j += '"type": "Feature", '
-    if @name != nil
-      j+= '"properties": {'
-      j += '"title": "' + @name + '"'
-      j += '},'
+  public
+
+  def add_segment(newTrackObj)
+    self.trackSegmentObjsList << newTrackObj
+  end
+
+  def remove_segment(trackObj)
+    self.trackSegmentObjsList.delete(trackObj)
+  end
+
+  def edit_name(newName)
+    self.name = newName
+  end
+
+  def get_name()
+    return self.name
+  end
+
+  def get_track_segments()
+    return self.trackSegmentObjsList
+  end
+
+  def get_coordinates()
+    coordinatesList = []
+    segmentsObjList = self.get_track_segments
+
+    segmentsObjList.each do |trackSegmentObj|
+      coordinatesList.append(trackSegmentObj.get_coordinates())
     end
-    j += '"geometry": {'
-    j += '"type": "MultiLineString",'
-    j +='"coordinates": ['
-    # Loop through all the segment objects
-    @segments.each_with_index do |s, index|
-      if index > 0
-        j += ","
-      end
-      j += '['
-      # Loop through all the coordinates in the segment
-      tsj = ''
-      s.coordinates.each do |c|
-        if tsj != ''
-          tsj += ','
-        end
-        # Add the coordinate
-        tsj += '['
-        tsj += "#{c.lon},#{c.lat}"
-        if c.ele != nil
-          tsj += ",#{c.ele}"
-        end
-        tsj += ']'
-      end
-      j+=tsj
-      j+=']'
-    end
-    j + ']}}'
+
+    return coordinatesList
   end
 end
+
 class TrackSegment
-  attr_reader :coordinates
-  def initialize(coordinates)
-    @coordinates = coordinates
+  attr_reader :wayPointList
+
+  def initialize(waypointObjsList)
+    @wayPointList = waypointObjsList
   end
-end
 
-class Point
+  public
 
-  attr_reader :lat, :lon, :ele
+  def add_waypoint(waypointObj)
+    self.wayPointList.append(waypointObj)
+  end
 
-  def initialize(lon, lat, ele=nil)
-    @lon = lon
-    @lat = lat
-    @ele = ele
+  def remove_waypoint(waypointObj)
+    self.wayPointList.delete(waypointObj)
+  end
+
+  def get_coordinates()
+    coordinateList = []
+
+    self.wayPointList.each do |wayPoint|
+      coordinateList.append << wayPoint.get_coordinates()
+    end
+
+    return coordinateList
   end
 end
 
 class Waypoint
+  attr_reader :latitude, :longitude, :elevation, :name, :iconType
 
-
-
-attr_reader :lat, :lon, :ele, :name, :type
-
-  def initialize(lon, lat, ele=nil, name=nil, type=nil)
-    @lat = lat
-    @lon = lon
-    @ele = ele
+  def initialize(longitude, latitude, elevation: nil, name: nil, iconType: nil)
+    @latitude = latitude
+    @longitude = longitude
+    @elevation = elevation
     @name = name
-    @type = type
+    @iconType = iconType
   end
 
-  def get_waypoint_json(indent=0)
-    j = '{"type": "Feature",'
-    # if name is not nil or type is not nil
-    j += '"geometry": {"type": "Point","coordinates": '
-    j += "[#{@lon},#{@lat}"
-    if ele != nil
-      j += ",#{@ele}"
+  public
+
+  def get_coordinates()
+    coordinateList = [self.longitude, self.latitude]
+    if (self.elevation)
+      coordinateList.append(self.elevation)
     end
-    j += ']},'
-    if name != nil or type != nil
-      j += '"properties": {'
-      if name != nil
-        j += '"title": "' + @name + '"'
-      end
-      if type != nil  # if type is not nil
-        if name != nil
-          j += ','
-        end
-        j += '"icon": "' + @type + '"'  # type is the icon
-      end
-      j += '}'
-    end
-    j += "}"
-    return j
+
+    return coordinateList
+  end
+
+  def get_name()
+    return self.name ? self.name : nil
+  end
+
+  def get_icon_type()
+    return self.iconType
   end
 end
 
-class World
-def initialize(name, things)
-  @name = name
-  @features = things
-end
-  def add_feature(f)
-    @features.append(t)
+class FeatureSet
+  attr_accessor :featureSetName, :featureSet
+
+  def initialize(featureSetName, featureSet)
+    @featureSetName = featureSetName
+    @featureSet = featureSet
   end
 
-  def to_geojson(indent=0)
-    # Write stuff
-    s = '{"type": "FeatureCollection","features": ['
-    @features.each_with_index do |f,i|
-      if i != 0
-        s +=","
-      end
-        if f.class == Track
-            s += f.get_track_json
-        elsif f.class == Waypoint
-            s += f.get_waypoint_json
-      end
-    end
-    s + "]}"
+  public
+
+  def get_features()
+    return self.featureSet
+  end
+
+  def get_name()
+    return self.featureSetName
   end
 end
-
-def main()
-  w = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
-  w2 = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
-  ts1 = [
-  Point.new(-122, 45),
-  Point.new(-122, 46),
-  Point.new(-121, 46),
-  ]
-
-  ts2 = [ Point.new(-121, 45), Point.new(-121, 46), ]
-
-  ts3 = [
-    Point.new(-121, 45.5),
-    Point.new(-122, 45.5),
-  ]
-
-  t = Track.new([ts1, ts2], "track 1")
-  t2 = Track.new([ts3], "track 2")
-
-  world = World.new("My Data", [w, w2, t, t2])
-
-  puts world.to_geojson()
-end
-
-if File.identical?(__FILE__, $0)
-  main()
-end
-
