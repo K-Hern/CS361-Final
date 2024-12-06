@@ -1,5 +1,5 @@
-require_relative 'geojson.rb'
-require_relative 'gis.rb'
+require_relative '../geojson.rb'
+require_relative '../gis.rb'
 require 'test/unit'
 
 class TestMainGeoJSON < Test::Unit::TestCase

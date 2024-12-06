@@ -1,4 +1,4 @@
-require_relative 'gis.rb'
+require_relative '../gis.rb'
 require 'test/unit'
 
 class TestGis < Test::Unit::TestCase
