@@ -124,7 +124,7 @@ class TestGis < Test::Unit::TestCase
         Waypoint.new(-122, 45.5)
       ])
 
-      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2, trackSegment3])
+      testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3], "Name of Segment")
 
       name = testTrack1.get_name()
 
@@ -148,16 +148,16 @@ class TestGis < Test::Unit::TestCase
         Waypoint.new(-122, 45.5)
       ])
 
-      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2, trackSegment3])
+      testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3], "Name of Segment")
 
       segmentList = [trackSegment1, trackSegment2, trackSegment3]
 
       assert_equal(segmentList, testTrack1.get_track_segments())
     end
 
-    def test_get_track_coordinates
+    def test_get_coordinates
       trackSegment1 = TrackSegment.new([
-        Waypoint.new(-122, 45, 300),
+        Waypoint.new(-122, 45, elevation: 300),
         Waypoint.new(-122, 46)
       ])
 
@@ -166,13 +166,11 @@ class TestGis < Test::Unit::TestCase
         Waypoint.new(-121, 46)
       ])
 
-      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2])
+      testTrack1 = Track.new([trackSegment1, trackSegment2], "Name of Segment")
 
-      coord_list = testTrack1.get_track_coordinates()
+      expected = [[[-122, 45, 300], [-122, 46]], [[-121, 45], [-121, 46]]]
 
-      expected = [[-122, 45, 300], [-122, 46], [121, 45], [121, 46]]
-
-      assert_equal(expected, coord_list)
+      assert_equal(expected, testTrack1.get_coordinates())
     end
 
   end
@@ -229,7 +227,7 @@ class TestGis < Test::Unit::TestCase
                   [-122, 46],
                   [-121, 46]]
 
-      assert_equal(expected, trackSegment1.get_coordinates.length())
+      assert_equal(expected, trackSegment1.get_coordinates)
     end
   end
 
@@ -243,11 +241,11 @@ class TestGis < Test::Unit::TestCase
     def test_get_coordinates
       homePoint = Waypoint.new(-122, 46, elevation: 2000)
 
-      assert_equal([122, 46], homePoint.get_coordinates)
+      assert_equal([-122, 46, 2000], homePoint.get_coordinates)
     end
 
     def test_get_name
-      homePoint = Waypoint.new(-122, 46, 2000, elevation: 300, name: "Home")
+      homePoint = Waypoint.new(-122, 46, elevation: 2000, elevation: 300, name: "Home")
 
       assert_equal("Home", homePoint.get_name)
     end
