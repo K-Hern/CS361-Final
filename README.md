@@ -1,3 +1,26 @@
+## Summary of Changes
+- Complete overhaul of base GIS classes
+  - Made each into their own dedicated class; promotes reusability, organization and readability
+  - Added basic interaction [and duck] methods to each
+  - Reduced Coupling and dependencies within base classes; they should have no knowledge of the GEOJSON functionality; their job is to store data
+- Changed variable & class names to be more readable and intuitive
+- Eliminated inherent DRY violation in Point and Waypoint structures
+- Separated the base GIS classes into a separate file for logical separation of entities; base and functional
+- Separated main() and executable code to its own file; logical separation
+- Created a test suite for each class
+- Eliminated manual creation of JSON string, prone to errors and bugs, instead now uses ruby hash
+- Created a GEOJSON class that is modularized
+- Defined explicit interfaces within classes
+- Added keyword parameters to increase, readability and decrease user dependency
+- Changed spacing to be consistent
+
+### Test Suite
+
+Navigate to the test folder and run ``` tests.bash ``` to automatically run all test suites.
+
+## IMPORTANT NOTE
+There is an inconsistency in the presented output contained within this README file (as given) and the given test suite and that output produced when running the [given] main function. The order / structure of the JSON differs in the placement of feature objects - "properties" before "geometry". As a result, the example in this README along with the given test suite examples were used to create and verify the structure of the GEOJSON output.
+
 ## GIS Tool
 
 Geographic Information Systems program.
