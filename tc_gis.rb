@@ -1,75 +1,223 @@
 require_relative 'gis.rb'
-require 'json'
 require 'test/unit'
 
 class TestGis < Test::Unit::TestCase
 
-  def test_waypoints
-    w = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
-    expected = JSON.parse('{"type": "Feature","properties": {"title": "home","icon": "flag"},"geometry": {"type": "Point","coordinates": [-121.5,45.5,30]}}')
-    result = JSON.parse(w.get_waypoint_json)
-    assert_equal(result, expected)
+  # Test for absence of icon in json when no icon given
+  # Test for absence of name in json when no name given
 
-    w = Waypoint.new(-121.5, 45.5, nil, nil, "flag")
-    expected = JSON.parse('{"type": "Feature","properties": {"icon": "flag"},"geometry": {"type": "Point","coordinates": [-121.5,45.5]}}')
-    result = JSON.parse(w.get_waypoint_json)
-    assert_equal(result, expected)
+  class TestTrack < TestGis
+    def test_creation_of_track
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
 
-    w = Waypoint.new(-121.5, 45.5, nil, "store", nil)
-    expected = JSON.parse('{"type": "Feature","properties": {"title": "store"},"geometry": {"type": "Point","coordinates": [-121.5,45.5]}}')
-    result = JSON.parse(w.get_waypoint_json)
-    assert_equal(result, expected)
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      assert_nothing_raised do
+        testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3])
+      end
+    end
+
+    def test_add_segment
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      newSegment = TrackSegment.new([
+        Waypoint.new(-125, 46.1),
+        Waypoint.new(-120, 42.2)
+      ])
+
+      testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3])
+
+      testTrack1.add_segment(newSegment)
+
+      newLength = testTrack1.trackSegmentObjsList.length()
+
+      assert_equal(4, newLength)
+    end
+
+    def test_remove_segment
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3])
+
+      testTrack1.remove_segment(trackSegment3)
+
+      newLength = testTrack1.trackSegmentObjsList.length()
+
+      assert_equal(2, newLength)
+    end
+
+    def test_edit_name
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      testTrack1 = Track.new([trackSegment1, trackSegment2, trackSegment3])
+
+      testTrack1.edit_name("My Segment")
+
+      assert_equal("My Segment", testTrack1.name)
+    end
+
+    def test_get_name
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2, trackSegment3])
+
+      name = testTrack1.get_name()
+
+      assert_equal("Name of Segment", name)
+    end
+
+    def test_get_track_segments
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45),
+        Waypoint.new(-122, 46),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      trackSegment3 = TrackSegment.new([
+        Waypoint.new(-121, 45.5),
+        Waypoint.new(-122, 45.5)
+      ])
+
+      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2, trackSegment3])
+
+      segmentList = [trackSegment1, trackSegment2, trackSegment3]
+
+      assert_equal(segmentList, testTrack1.get_track_segments())
+    end
+
+    def test_get_track_coordinates
+      trackSegment1 = TrackSegment.new([
+        Waypoint.new(-122, 45, 300),
+        Waypoint.new(-122, 46)
+      ])
+
+      trackSegment2 = TrackSegment.new([
+        Waypoint.new(-121, 45),
+        Waypoint.new(-121, 46)
+      ])
+
+      testTrack1 = Track.new("Name of Segment", [trackSegment1, trackSegment2])
+
+      coord_list = testTrack1.get_track_coordinates()
+
+      expected = [[-122, 45, 300], [-122, 46], [121, 45], [121, 46]]
+
+      assert_equal(expected, coord_list)
+    end
+
   end
 
-  def test_tracks
-    ts1 = [
-      Point.new(-122, 45),
-      Point.new(-122, 46),
-      Point.new(-121, 46),
-    ]
+  class TestTrackSegment < TestGis
+    def test_creation_of_segment
+      segment = TrackSegment.new()
+    end
 
-    ts2 = [ Point.new(-121, 45), Point.new(-121, 46), ]
+    def
+    end
 
-    ts3 = [
-      Point.new(-121, 45.5),
-      Point.new(-122, 45.5),
-    ]
-
-    t = Track.new([ts1, ts2], "track 1")
-    expected = JSON.parse('{"type": "Feature", "properties": {"title": "track 1"},"geometry": {"type": "MultiLineString","coordinates": [[[-122,45],[-122,46],[-121,46]],[[-121,45],[-121,46]]]}}')
-    result = JSON.parse(t.get_track_json)
-    assert_equal(expected, result)
-
-    t = Track.new([ts3], "track 2")
-    expected = JSON.parse('{"type": "Feature", "properties": {"title": "track 2"},"geometry": {"type": "MultiLineString","coordinates": [[[-121,45.5],[-122,45.5]]]}}')
-    result = JSON.parse(t.get_track_json)
-    assert_equal(expected, result)
+    def
+    end
   end
 
-  def test_world
-    w = Waypoint.new(-121.5, 45.5, 30, "home", "flag")
-    w2 = Waypoint.new(-121.5, 45.6, nil, "store", "dot")
-    ts1 = [
-      Point.new(-122, 45),
-      Point.new(-122, 46),
-      Point.new(-121, 46),
-    ]
+  class TestWaypoint < TestGis
+    def test_creation_of_wapoint
+      homePoint = Waypoint.new()
+    end
 
-    ts2 = [ Point.new(-121, 45), Point.new(-121, 46), ]
+    def
+    end
 
-    ts3 = [
-      Point.new(-121, 45.5),
-      Point.new(-122, 45.5),
-    ]
-
-    t = Track.new([ts1, ts2], "track 1")
-    t2 = Track.new([ts3], "track 2")
-
-    w = World.new("My Data", [w, w2, t, t2])
-
-    expected = JSON.parse('{"type": "FeatureCollection","features": [{"type": "Feature","properties": {"title": "home","icon": "flag"},"geometry": {"type": "Point","coordinates": [-121.5,45.5,30]}},{"type": "Feature","properties": {"title": "store","icon": "dot"},"geometry": {"type": "Point","coordinates": [-121.5,45.6]}},{"type": "Feature", "properties": {"title": "track 1"},"geometry": {"type": "MultiLineString","coordinates": [[[-122,45],[-122,46],[-121,46]],[[-121,45],[-121,46]]]}},{"type": "Feature", "properties": {"title": "track 2"},"geometry": {"type": "MultiLineString","coordinates": [[[-121,45.5],[-122,45.5]]]}}]}')
-    result = JSON.parse(w.to_geojson)
-    assert_equal(expected, result)
+    def
+    end
   end
 
+  class TestFeatureSet < TestGis
+    def test_creation_of_featureset
+      aspenWaypoint = Waypoint.new()
+      nyWaypoint = Waypoint.new()
+      coWaypoint = Waypoint.new()
+      parisWaypoint = Waypoint.new()
+
+      homeSet = FeatureSet.new("My Homes", [aspenWaypoint, nyWaypoint, coWaypoint, parisWaypoint])
+    end
+
+    def
+    end
+
+    def
+    end
+  end
 end
